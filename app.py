@@ -57,7 +57,7 @@ TEMPLATE = """
         <button type="submit">Run Dijkstra</button>
     </form>
     {% if result %}
-        <h3>Results (from source {{source}}):</h3>
+        <h3>Results (from source {{src}}):</h3>
         <table border="1" cellpadding="5">
             <tr><th>Vertex</th><th>Distance</th><th>Path</th></tr>
             {% for v, d, path in result %}
@@ -76,14 +76,13 @@ TEMPLATE = """
 @app.route("/", methods=["GET", "POST", "HEAD"])
 def index():
     result = None
-    source = None
+    src = None
 
-    # Only process form data if it's a POST request
     if request.method == "POST":
         try:
             n = int(request.form["vertices"])
             edges_input = request.form["edges"].strip().splitlines()
-            source = int(request.form["source"])
+            src = int(request.form["source"])
 
             # Build graph
             graph = {i: [] for i in range(n)}
@@ -91,19 +90,18 @@ def index():
                 u, v, w = map(int, line.split())
                 graph[u].append((v, w))
 
-            dist, prev = dijkstra(graph, source)
+            dist, prev = dijkstra(graph, src)
 
             result = []
             for v in range(n):
-                path = reconstruct_path(prev, source, v)
+                path = reconstruct_path(prev, src, v)
                 path_str = " -> ".join(map(str, path)) if path else "No path"
                 d = dist[v] if dist[v] != float("inf") else "INF"
                 result.append((v, d, path_str))
         except Exception as e:
-            # Catch errors gracefully
             result = [("Error", "Invalid input", str(e))]
 
-    return render_template_string(TEMPLATE, result=result, source=source)
+    return render_template_string(TEMPLATE, result=result, src=src)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
