@@ -73,29 +73,35 @@ TEMPLATE = """
 </html>
 """
 
-@app.route("/", methods=["GET", "POST", "HEAD"])  # ✅ Added HEAD support
+@app.route("/", methods=["GET", "POST", "HEAD"])
 def index():
     result = None
     source = None
+
+    # Only process form data if it's a POST request
     if request.method == "POST":
-        n = int(request.form["vertices"])
-        edges_input = request.form["edges"].strip().splitlines()
-        source = int(request.form["source"])
+        try:
+            n = int(request.form["vertices"])
+            edges_input = request.form["edges"].strip().splitlines()
+            source = int(request.form["source"])
 
-        # Build graph
-        graph = {i: [] for i in range(n)}
-        for line in edges_input:
-            u, v, w = map(int, line.split())
-            graph[u].append((v, w))
+            # Build graph
+            graph = {i: [] for i in range(n)}
+            for line in edges_input:
+                u, v, w = map(int, line.split())
+                graph[u].append((v, w))
 
-        dist, prev = dijkstra(graph, source)
+            dist, prev = dijkstra(graph, source)
 
-        result = []
-        for v in range(n):
-            path = reconstruct_path(prev, source, v)
-            path_str = " -> ".join(map(str, path)) if path else "No path"
-            d = dist[v] if dist[v] != float("inf") else "INF"
-            result.append((v, d, path_str))
+            result = []
+            for v in range(n):
+                path = reconstruct_path(prev, source, v)
+                path_str = " -> ".join(map(str, path)) if path else "No path"
+                d = dist[v] if dist[v] != float("inf") else "INF"
+                result.append((v, d, path_str))
+        except Exception as e:
+            # Catch errors gracefully
+            result = [("Error", "Invalid input", str(e))]
 
     return render_template_string(TEMPLATE, result=result, source=source)
 
