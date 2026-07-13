@@ -73,7 +73,7 @@ TEMPLATE = """
 </html>
 """
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST", "HEAD"])  # ✅ Added HEAD support
 def index():
     result = None
     source = None
@@ -100,4 +100,4 @@ def index():
     return render_template_string(TEMPLATE, result=result, source=source)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
